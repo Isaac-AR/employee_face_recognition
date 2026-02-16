@@ -43,6 +43,7 @@ Real-time face recognition and automatic attendance marking.
 - opencv-python>=4.5.0
 - face-recognition>=1.3.0
 - numpy>=1.19.0
+- pyttsx3>=2.90
 
 Install: `pip install dlib-bin`
 Install: `pip install -r requirements.txt`

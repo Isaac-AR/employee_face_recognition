@@ -4,7 +4,7 @@ import pickle
 import os
 import numpy as np
 import time
-
+from speech import speak
 
 
 def recognize_and_greet():
@@ -30,15 +30,17 @@ def recognize_and_greet():
     
     if not cam.isOpened():
         print("Error: Could not open webcam!")
+        speak("Error: Could not open webcam!")
         return
     
     # Tolerance for face matching (lower = more strict)
     tolerance = 0.6
     
     # Track recognized people in this session
-    recognized_today = set()
+    greeted_this_session = set()
     # Track the last time an unknown face was detected (so it won't keep printing the same message constantly)
-    #Set default value to 1000.0 seconds as a stand-in for never (if an unknown face has not yet been detected)
+    # Since computer time starts in 1970 this works as the last unknown being effectively never.
+    UNKNOWN_SPEECH_COOLDOWN = 2.0
     last_unknown_print = 1000.0
     
     while True:
@@ -46,6 +48,7 @@ def recognize_and_greet():
         
         if not ret:
             print("Error: Failed to read from camera!")
+            speak("Error: Failed to read from camera!")
             break
         
         # Resize for faster processing
@@ -77,24 +80,26 @@ def recognize_and_greet():
         
         # (OLD) Mark attendance
         #for name, confidence in zip(face_names, face_distances):
-        #    if name != "Unknown" and name not in recognized_today:
+        #    if name != "Unknown" and name not in greeted_this_session:
         #        # Mark attendance
         #        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         #        with open("attendance.csv", "a") as f:
         #            f.write(f"{name},{timestamp}\n")
         #        print(f"✓ Attendance marked: {name} at {timestamp}")
-        #        recognized_today.add(name)
+        #        greeted_this_session.add(name)
 
         # Mark attendance
         for name, confidence in zip(face_names, face_distances):
-            if name != "Unknown" and name not in recognized_today:
+            if name != "Unknown" and name not in greeted_this_session:
                 # Mark attendance
                 print(f"Hello {name}")
-                recognized_today.add(name)
+                speak(f"Hello {name}")
+                greeted_this_session.add(name)
             elif name == "Unknown":
                 current_time = time.time()
-                if current_time - last_unknown_print > 2.0:
-                    print("Unkown face detected")
+                if current_time - last_unknown_print > UNKNOWN_SPEECH_COOLDOWN:
+                    print("Unknown face detected. Please return to the main menu and register your face so that I can mark your attendance")
+                    speak("Unknown face detected. Please return to the main menu and register your face so that I can mark your attendance")
                     last_unknown_print = current_time
                       
         
@@ -131,6 +136,7 @@ def recognize_and_greet():
     cam.release()
     cv2.destroyAllWindows()
     print("\nFace recognition stopped.")
+    speak("Face recognition stopped.")
 
 if __name__ == "__main__":
     recognize_and_greet()
