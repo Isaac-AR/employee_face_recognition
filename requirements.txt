@@ -1,6 +1,13 @@
 opencv-python>=4.5.0
 numpy>=1.19.0
+# model files (dependency of face-recognition)
 face-recognition==1.3.0
+# face_recognition_models uses pkg_resources; pin setuptools to keep pkg_resources available
 setuptools<81
+#(pyttsx3 is optional at the moment, since the current version of the main app does not use it)
 pyttsx3>=2.90
-pywin32
+#speech
+pywin32; platform_system=="Windows"
+# Windows-friendly dlib wheel distribution (avoids building from source/CMake)
+dlib-bin>=20.0.0
+

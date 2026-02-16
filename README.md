@@ -9,6 +9,15 @@ A Python-based face recognition system that captures face images, trains a model
 - **Timestamp Logging**: Records attendance with date and time
 - **Easy to Use**: Simple command-line interface
 
+## Setup (Windows / Python 3.12 tested)
+
+### 1) Create and activate a virtual environment
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+
+
 ## Quick Start
 
 ### 1. Capture Faces
@@ -45,11 +54,12 @@ Real-time face recognition and automatic attendance marking.
 - numpy>=1.19.0
 - pyttsx3>=2.90
 - pywin32
+- dlib-bin>=20.0.0
 
 Install: `pip install dlib-bin`
 Install: `pip install -r requirements.txt`
 Install: `pip install git+https://github.com/ageitgey/face_recognition_models`
-
+Install: `pip install face-recognition==1.3.0 --no-deps`
 ## Windows / Python 3.12 Notes
 
 This project depends on `face_recognition_models`, which currently uses `pkg_resources` from `setuptools`.  
@@ -63,7 +73,13 @@ Attendance marked in `attendance.csv`:
 ```
 Name,Timestamp
 Jayneel,2026-02-08 15:53:29
-```
+
+
+## GUI
+
+bash
+python app.py
+
 
 ## License
 MIT License
