@@ -44,6 +44,7 @@ Real-time face recognition and automatic attendance marking.
 - face-recognition>=1.3.0
 - numpy>=1.19.0
 - pyttsx3>=2.90
+- pywin32
 
 Install: `pip install dlib-bin`
 Install: `pip install -r requirements.txt`

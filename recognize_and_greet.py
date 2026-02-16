@@ -4,13 +4,18 @@ import pickle
 import os
 import numpy as np
 import time
-from speech import speak
+from speech import Speech
+from datetime import datetime
+import win32com.client
 
 
 def recognize_and_greet():
     #OLD """Recognize faces in real-time and mark attendance."""
     """Recognizes faces in real-time and greets the associated person"""
     
+    #Create speaker
+    speaker = win32com.client.Dispatch("SAPI.SpVoice")
+        
     # Load encodings
     if not os.path.exists("encodings.pickle"):
         print("Error: encodings.pickle not found!")
@@ -22,15 +27,18 @@ def recognize_and_greet():
         known_encodings = data["encodings"]
         known_names = data["names"]
     
-    print("Starting face recognition...\n")
+    
+    print("Starting face recognition.\n")
+    print("Please wait while the program loads...\n")
     print("Press 'Q' to quit")
+    speaker.Speak("Starting face recognition. Please wait while the program loads. Press Q to quit.")
     
     # Initialize webcam
     cam = cv2.VideoCapture(0)
     
     if not cam.isOpened():
         print("Error: Could not open webcam!")
-        speak("Error: Could not open webcam!")
+        speaker.Speak("Error: Could not open webcam!")
         return
     
     # Tolerance for face matching (lower = more strict)
@@ -40,16 +48,21 @@ def recognize_and_greet():
     greeted_this_session = set()
     # Track the last time an unknown face was detected (so it won't keep printing the same message constantly)
     # Since computer time starts in 1970 this works as the last unknown being effectively never.
-    UNKNOWN_SPEECH_COOLDOWN = 2.0
+    UNKNOWN_SPEECH_COOLDOWN = 15.0
     last_unknown_print = 1000.0
     
+    intial_greeting_message_played = False
     while True:
         ret, frame = cam.read()
         
         if not ret:
             print("Error: Failed to read from camera!")
-            speak("Error: Failed to read from camera!")
+            speaker.Speak("Error: Failed to read from camera!")
             break
+        elif not intial_greeting_message_played:
+            print("Face recognition started")
+            speaker.Speak("Face recognition started")
+            intial_greeting_message_played = True
         
         # Resize for faster processing
         small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
@@ -92,16 +105,21 @@ def recognize_and_greet():
         for name, confidence in zip(face_names, face_distances):
             if name != "Unknown" and name not in greeted_this_session:
                 # Mark attendance
-                print(f"Hello {name}")
-                speak(f"Hello {name}")
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                with open("attendance.csv", "a") as f:
+                    f.write(f"{name},{timestamp}\n")
+                print(f"Hello {name}. Your attendance as been marked at {timestamp}")
+                cv2.putText(frame, "Speaking, please wait", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+                speaker.Speak(f"Hello {name}. Your attendance as been marked at {timestamp}")
                 greeted_this_session.add(name)
             elif name == "Unknown":
                 current_time = time.time()
                 if current_time - last_unknown_print > UNKNOWN_SPEECH_COOLDOWN:
                     print("Unknown face detected. Please return to the main menu and register your face so that I can mark your attendance")
-                    speak("Unknown face detected. Please return to the main menu and register your face so that I can mark your attendance")
+                    cv2.putText(frame, "Speaking, please wait", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+                    speaker.Speak("Unknown face detected. Please return to the main menu and register your face so that I can mark your attendance")
                     last_unknown_print = current_time
-                      
+                    
         
         # Display results
         for (top, right, bottom, left), name, confidence in zip(face_locations, face_names, face_distances):
@@ -136,7 +154,7 @@ def recognize_and_greet():
     cam.release()
     cv2.destroyAllWindows()
     print("\nFace recognition stopped.")
-    speak("Face recognition stopped.")
+    speaker.Speak("Face recognition stopped.")
 
 if __name__ == "__main__":
     recognize_and_greet()
