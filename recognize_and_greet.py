@@ -2,10 +2,14 @@ import face_recognition
 import cv2
 import pickle
 import os
-from datetime import datetime
+import numpy as np
+import time
+
+
 
 def recognize_and_greet():
-    """Recognize faces in real-time and mark attendance."""
+    #OLD """Recognize faces in real-time and mark attendance."""
+    """Recognizes faces in real-time and greets the associated person"""
     
     # Load encodings
     if not os.path.exists("encodings.pickle"):
@@ -33,6 +37,9 @@ def recognize_and_greet():
     
     # Track recognized people in this session
     recognized_today = set()
+    # Track the last time an unknown face was detected (so it won't keep printing the same message constantly)
+    #Set default value to 1000.0 seconds as a stand-in for never (if an unknown face has not yet been detected)
+    last_unknown_print = 1000.0
     
     while True:
         ret, frame = cam.read()
@@ -43,7 +50,8 @@ def recognize_and_greet():
         
         # Resize for faster processing
         small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
-        rgb_small_frame = small_frame[:, :, ::-1]
+        rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
+        rgb_small_frame = np.ascontiguousarray(rgb_small_frame)
         
         # Detect faces and encodings
         face_locations = face_recognition.face_locations(rgb_small_frame)
@@ -67,15 +75,28 @@ def recognize_and_greet():
             face_names.append(name)
             face_distances.append(confidence)
         
+        # (OLD) Mark attendance
+        #for name, confidence in zip(face_names, face_distances):
+        #    if name != "Unknown" and name not in recognized_today:
+        #        # Mark attendance
+        #        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        #        with open("attendance.csv", "a") as f:
+        #            f.write(f"{name},{timestamp}\n")
+        #        print(f"✓ Attendance marked: {name} at {timestamp}")
+        #        recognized_today.add(name)
+
         # Mark attendance
         for name, confidence in zip(face_names, face_distances):
             if name != "Unknown" and name not in recognized_today:
                 # Mark attendance
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                with open("attendance.csv", "a") as f:
-                    f.write(f"{name},{timestamp}\n")
-                print(f"✓ Attendance marked: {name} at {timestamp}")
+                print(f"Hello {name}")
                 recognized_today.add(name)
+            elif name == "Unknown":
+                current_time = time.time()
+                if current_time - last_unknown_print > 2.0:
+                    print("Unkown face detected")
+                    last_unknown_print = current_time
+                      
         
         # Display results
         for (top, right, bottom, left), name, confidence in zip(face_locations, face_names, face_distances):
@@ -95,7 +116,7 @@ def recognize_and_greet():
             cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
             
             # Draw label
-            label = f"{name}" if name != "Unknown" else "Unknown"
+            label = f"Hello {name}" if name != "Unknown" else "Unknown"
             if confidence > 0:
                 label += f" ({confidence:.2f})"
             cv2.putText(frame, label, (left, top - 10),
@@ -103,7 +124,8 @@ def recognize_and_greet():
         
         cv2.imshow("Face Recognition - Press 'Q' to quit", frame)
         
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q') or key == ord('Q'):
             break
     
     cam.release()

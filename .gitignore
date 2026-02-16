@@ -38,3 +38,9 @@ dataset/
 encodings.pickle
 attendance.csv
 .DS_Store
+
+# Local biometric inputs/outputs (avoid committing faces/embeddings)
+data/
+db/
+*.sqlite3
+*.db

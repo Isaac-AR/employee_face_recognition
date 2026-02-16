@@ -1,4 +1,4 @@
-# Face Recognition Attendance System
+# Face Recognition & Greeting
 
 A Python-based face recognition system that captures face images, trains a model, and marks attendance automatically.
 
@@ -13,21 +13,23 @@ A Python-based face recognition system that captures face images, trains a model
 
 ### 1. Capture Faces
 ```bash
-python3 capture_faces.py
+python capture_faces.py
 ```
 Enter a person's name and press 'C' to capture photos (need at least 10).
 
 ### 2. Train Model
 ```bash
-python3 train_model.py
+python train_model.py
 ```
 This creates facial encodings from captured images.
 
 ### 3. Mark Attendance
 ```bash
-python3 recognize_and_greet.py
+python recognize_and_greet.py
 ```
 Real-time face recognition and automatic attendance marking.
+
+“This uses pretrained face encodings (no deep model training).”
 
 ## How It Works
 1. **Face Capture**: Saves face images in `dataset/[name]/`
@@ -37,11 +39,22 @@ Real-time face recognition and automatic attendance marking.
 
 ## Requirements
 - Python 3.7+
-- opencv-python
-- face-recognition
-- numpy
+- setuptools<81
+- opencv-python>=4.5.0
+- face-recognition>=1.3.0
+- numpy>=1.19.0
 
+Install: `pip install dlib-bin`
 Install: `pip install -r requirements.txt`
+Install: `pip install git+https://github.com/ageitgey/face_recognition_models`
+
+## Windows / Python 3.12 Notes
+
+This project depends on `face_recognition_models`, which currently uses `pkg_resources` from `setuptools`.  
+On Python 3.12+, you may need to pin setuptools to a version that still includes `pkg_resources`:
+
+```bash
+pip install "setuptools<81"
 
 ## Output
 Attendance marked in `attendance.csv`:
@@ -54,3 +67,6 @@ Jayneel,2026-02-08 15:53:29
 MIT License
 
 Made by Jayneel with ❤️
+
+## Isaac Notes
+“On Python 3.12+, install setuptools<81 because face_recognition_models depends on pkg_resources.”
